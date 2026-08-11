@@ -57,9 +57,6 @@ export function TimelineBoard({ initialTasks }: { initialTasks: Task[] }){
 
   const getTaskPosition = (t: Task) => {
     if (!t.start_date) return { left: 0, width: 10 };
-    const viewStartMs = startDate.getTime();
-    const startMs = new Date(t.start_date).getTime();
-    
     // reset to midnight for precise day calculation
     const viewStartDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()).getTime();
     const startDay = new Date(new Date(t.start_date).getFullYear(), new Date(t.start_date).getMonth(), new Date(t.start_date).getDate()).getTime();

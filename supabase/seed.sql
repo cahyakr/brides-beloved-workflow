@@ -40,21 +40,21 @@ VALUES
 ON CONFLICT (project_id, user_id) DO NOTHING;
 
 -- 6. Insert Tasks (5 Phases)
-INSERT INTO public.tasks (id, project_id, title, description, category, start_date, due_date, priority, status, visible_to_client)
+INSERT INTO public.tasks (id, project_id, title, description, category, start_date, due_date, priority, status, visible_to_client, client_can_complete, sort_order)
 VALUES
 -- Fase 1
-('33333333-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'Meeting Brainstorming (Fase 1)', 'Mendapatkan detail Wedding Information, Visualisasi Rundown Acara, Timeline, dll.', 'Fase 1 - Wedding Direction', '2026-06-01', '2026-06-15', 'high', 'completed', true),
+('33333333-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'Meeting Brainstorming (Fase 1)', 'Mendapatkan detail Wedding Information, Visualisasi Rundown Acara, Timeline, dll.', 'Fase 1 - Wedding Direction', '2026-06-01', '2026-06-15', 'high', 'completed', true, true, 10),
 -- Fase 2
-('33333333-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', 'Pilih Vendor & Visit Venue (Fase 2)', 'Memilih Vendor Utama dan Support, serta kunjungan ke lokasi acara.', 'Fase 2 - Vendor Selection', '2026-06-16', '2026-07-30', 'high', 'completed', true),
-('33333333-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', 'Pilih Attire, Makeup, Food Test (Fase 2)', 'Pemilihan baju, test makeup, dan food testing tahap 1.', 'Fase 2 - Vendor Selection', '2026-07-01', '2026-08-15', 'medium', 'in_progress', true),
+('33333333-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', 'Pilih Vendor & Visit Venue (Fase 2)', 'Memilih Vendor Utama dan Support, serta kunjungan ke lokasi acara.', 'Fase 2 - Vendor Selection', '2026-06-16', '2026-07-30', 'high', 'completed', true, false, 20),
+('33333333-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', 'Pilih Attire, Makeup, Food Test (Fase 2)', 'Pemilihan baju, test makeup, dan food testing tahap 1.', 'Fase 2 - Vendor Selection', '2026-07-01', '2026-08-15', 'medium', 'in_progress', true, true, 30),
 -- Fase 3
-('33333333-0000-0000-0000-000000000004', '22222222-0000-0000-0000-000000000001', 'Meeting Rundown Acara (Fase 3)', 'Menentukan Konsep acara dan Event Development.', 'Fase 3 - Wedding Detail Planning', '2026-08-16', '2026-08-30', 'high', 'in_progress', true),
-('33333333-0000-0000-0000-000000000005', '22222222-0000-0000-0000-000000000001', 'Fiting Attire & Concept Decoration (Fase 3)', 'Fiting 1-3 Attire Pengantin & Orangtua, serta Meeting Concept Decoration.', 'Fase 3 - Wedding Detail Planning', '2026-09-01', '2026-09-30', 'medium', 'not_started', true),
+('33333333-0000-0000-0000-000000000004', '22222222-0000-0000-0000-000000000001', 'Meeting Rundown Acara (Fase 3)', 'Menentukan Konsep acara dan Event Development.', 'Fase 3 - Wedding Detail Planning', '2026-08-16', '2026-08-30', 'high', 'in_progress', true, true, 40),
+('33333333-0000-0000-0000-000000000005', '22222222-0000-0000-0000-000000000001', 'Fiting Attire & Concept Decoration (Fase 3)', 'Fiting 1-3 Attire Pengantin & Orangtua, serta Meeting Concept Decoration.', 'Fase 3 - Wedding Detail Planning', '2026-09-01', '2026-09-30', 'medium', 'not_started', true, false, 50),
 -- Fase 4
-('33333333-0000-0000-0000-000000000006', '22222222-0000-0000-0000-000000000001', 'Final Technical Meeting (Fase 4)', 'Finalisasi Konsep Pernikahan, Rundown Acara, dan Briefing Vendor.', 'Fase 4 - Wedding Finalization', '2026-11-01', '2026-11-15', 'high', 'not_started', true),
-('33333333-0000-0000-0000-000000000007', '22222222-0000-0000-0000-000000000001', 'Produksi Kebutuhan Acara (Fase 4)', 'Memastikan produksi semua kebutuhan acara selesai sebelum hari H.', 'Fase 4 - Wedding Finalization', '2026-11-15', '2026-12-10', 'high', 'not_started', false),
+('33333333-0000-0000-0000-000000000006', '22222222-0000-0000-0000-000000000001', 'Final Technical Meeting (Fase 4)', 'Finalisasi Konsep Pernikahan, Rundown Acara, dan Briefing Vendor.', 'Fase 4 - Wedding Finalization', '2026-11-01', '2026-11-15', 'high', 'not_started', true, false, 60),
+('33333333-0000-0000-0000-000000000007', '22222222-0000-0000-0000-000000000001', 'Produksi Kebutuhan Acara (Fase 4)', 'Memastikan produksi semua kebutuhan acara selesai sebelum hari H.', 'Fase 4 - Wedding Finalization', '2026-11-15', '2026-12-10', 'high', 'not_started', false, false, 70),
 -- Fase 5
-('33333333-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000001', 'Wedding Day Execution (Fase 5)', 'Menjalankan seluruh rangkaian acara sesuai rencana yang disusun.', 'Fase 5 - Wedding Day Execution', '2026-12-24', '2026-12-24', 'urgent', 'not_started', true)
+('33333333-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000001', 'Wedding Day Execution (Fase 5)', 'Menjalankan seluruh rangkaian acara sesuai rencana yang disusun.', 'Fase 5 - Wedding Day Execution', '2026-12-24', '2026-12-24', 'urgent', 'not_started', true, false, 80)
 ON CONFLICT (id) DO NOTHING;
 
 -- 7. Task Assignees
@@ -68,3 +68,23 @@ VALUES
 ('33333333-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000002'),
 ('33333333-0000-0000-0000-000000000008', '00000000-0000-0000-0000-000000000003')
 ON CONFLICT (task_id, user_id) DO NOTHING;
+
+-- 8. Meeting, budget, and vendors used by the planner modules
+INSERT INTO public.meetings (id, project_id, title, description, starts_at, ends_at, location, visible_to_client, created_by)
+VALUES ('44444444-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'Food Tasting & Menu Review', 'Final review untuk menu utama dan dessert.', '2026-08-20 10:00:00+07', '2026-08-20 12:00:00+07', 'The Apurva Bali', true, '00000000-0000-0000-0000-000000000002')
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.budgets (id, project_id, currency, target_amount)
+VALUES ('55555555-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'IDR', 450000000)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.budget_items (budget_id, category, item_name, vendor_name, estimated_amount, actual_amount, paid_amount, payment_status, due_date)
+VALUES
+('55555555-0000-0000-0000-000000000001', 'Venue', 'Venue & ballroom', 'The Apurva Bali', 150000000, 150000000, 75000000, 'pending', '2026-09-01'),
+('55555555-0000-0000-0000-000000000001', 'Decoration', 'Wedding decoration', 'Bloom Atelier', 85000000, 80000000, 25000000, 'pending', '2026-10-15');
+
+INSERT INTO public.vendors (id, project_id, name, category, contact_name, phone, status, contract_value, visible_to_client)
+VALUES
+('66666666-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'Bloom Atelier', 'Decoration', 'Nadia', '081200000001', 'booked', 80000000, true),
+('66666666-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', 'Evermore Films', 'Documentation', 'Raka', '081200000002', 'shortlisted', 45000000, true)
+ON CONFLICT (id) DO NOTHING;
