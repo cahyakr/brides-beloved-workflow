@@ -3,6 +3,28 @@
 import { createClient } from "./supabase/server";
 import { revalidatePath } from "next/cache";
 
+type ServerSupabase = NonNullable<Awaited<ReturnType<typeof createClient>>>;
+
+async function getClientProjectId(supabase: ServerSupabase) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" } as const;
+
+  const { data: client } = await supabase.from("clients").select("id").eq("profile_id", user.id).maybeSingle();
+  if (!client) return { error: "Client profile not found" } as const;
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("id")
+    .eq("client_id", client.id)
+    .neq("status", "cancelled")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (!project) return { error: "Wedding project not found" } as const;
+  return { user, projectId: project.id } as const;
+}
+
 export async function createLead(formData: FormData) {
   const supabase = await createClient();
   if (!supabase) return { error: "No DB connection" };
@@ -177,33 +199,126 @@ export async function completeClientTask(formData: FormData) {
   return { success: true };
 }
 
-export async function createClientTask(formData: FormData) {
+export async function createGuest(formData: FormData) {
   const supabase = await createClient();
-  if (!supabase) return { error: "No DB connection" };
+  if (!supabase) return { success: true, demo: true };
+  const context = await getClientProjectId(supabase);
+  if ("error" in context) return { error: context.error };
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Unauthorized" };
+  const name = String(formData.get("name") || "").trim();
+  const phone = String(formData.get("phone") || "").trim();
+  const guestGroup = String(formData.get("guest_group") || "").trim();
+  const pax = Number(formData.get("pax") || 1);
 
-  const project_id = formData.get("project_id") as string;
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  
-  if (!project_id || !title) return { error: "Missing required fields" };
+  if (name.length < 2 || name.length > 120) return { error: "Nama tamu tidak valid" };
+  if (!Number.isInteger(pax) || pax < 1 || pax > 20) return { error: "Jumlah tamu harus 1–20 orang" };
 
-  const { error } = await supabase.from("tasks").insert({
-    project_id,
-    title,
-    description: description || null,
-    category: "Permintaan Klien",
-    status: "not_started",
-    priority: "medium",
-    visible_to_client: true,
-    client_can_complete: false,
-    created_by: user.id
+  const { error } = await supabase.from("guests").insert({
+    project_id: context.projectId,
+    name,
+    phone: phone || null,
+    guest_group: guestGroup || null,
+    pax,
+    status: "invited",
   });
 
   if (error) return { error: error.message };
+  revalidatePath("/portal/guests");
+  return { success: true };
+}
 
-  revalidatePath("/portal/timeline");
+export async function updateGuestStatus(formData: FormData) {
+  const supabase = await createClient();
+  if (!supabase) return { success: true, demo: true };
+  const context = await getClientProjectId(supabase);
+  if ("error" in context) return { error: context.error };
+
+  const id = String(formData.get("id") || "");
+  const status = String(formData.get("status") || "");
+  if (!id || !["invited", "confirmed", "declined", "attended"].includes(status)) return { error: "Status tamu tidak valid" };
+
+  const { error } = await supabase.from("guests").update({ status }).eq("id", id).eq("project_id", context.projectId);
+  if (error) return { error: error.message };
+  revalidatePath("/portal/guests");
+  return { success: true };
+}
+
+export async function deleteGuest(formData: FormData) {
+  const supabase = await createClient();
+  if (!supabase) return { success: true, demo: true };
+  const context = await getClientProjectId(supabase);
+  if ("error" in context) return { error: context.error };
+
+  const id = String(formData.get("id") || "");
+  if (!id) return { error: "Guest ID is required" };
+  const { error } = await supabase.from("guests").delete().eq("id", id).eq("project_id", context.projectId);
+  if (error) return { error: error.message };
+  revalidatePath("/portal/guests");
+  return { success: true };
+}
+
+export async function uploadClientDocument(formData: FormData) {
+  const supabase = await createClient();
+  if (!supabase) return { error: "Hubungkan Supabase untuk mengunggah dokumen" };
+  const context = await getClientProjectId(supabase);
+  if ("error" in context) return { error: context.error };
+
+  const file = formData.get("file");
+  const category = String(formData.get("category") || "general");
+  const allowedCategories = ["kua", "contract", "payment", "brief", "general"];
+  if (!(file instanceof File) || file.size === 0) return { error: "Pilih file yang ingin diunggah" };
+  if (file.size > 10 * 1024 * 1024) return { error: "Ukuran file maksimal 10 MB" };
+  if (!allowedCategories.includes(category)) return { error: "Kategori dokumen tidak valid" };
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-").replace(/-+/g, "-");
+  const path = `${context.projectId}/client/${crypto.randomUUID()}-${safeName}`;
+  const { error: uploadError } = await supabase.storage.from("project-files").upload(path, file, {
+    contentType: file.type || "application/octet-stream",
+    upsert: false,
+  });
+  if (uploadError) return { error: uploadError.message };
+
+  const { error: metadataError } = await supabase.from("files").insert({
+    project_id: context.projectId,
+    uploaded_by: context.user.id,
+    name: file.name,
+    path,
+    type: file.type || null,
+    size: file.size,
+    category,
+    visible_to_client: true,
+  });
+
+  if (metadataError) {
+    await supabase.storage.from("project-files").remove([path]);
+    return { error: metadataError.message };
+  }
+
+  revalidatePath("/portal/documents");
+  return { success: true };
+}
+
+export async function deleteClientDocument(formData: FormData) {
+  const supabase = await createClient();
+  if (!supabase) return { error: "No DB connection" };
+  const context = await getClientProjectId(supabase);
+  if ("error" in context) return { error: context.error };
+
+  const id = String(formData.get("id") || "");
+  const { data: document } = await supabase
+    .from("files")
+    .select("id, path, uploaded_by")
+    .eq("id", id)
+    .eq("project_id", context.projectId)
+    .eq("uploaded_by", context.user.id)
+    .maybeSingle();
+  if (!document) return { error: "Dokumen tidak ditemukan atau tidak dapat dihapus" };
+
+  const { error: storageError } = await supabase.storage.from("project-files").remove([document.path]);
+  if (storageError) return { error: storageError.message };
+  const { error } = await supabase.from("files").delete().eq("id", document.id).eq("uploaded_by", context.user.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/portal/documents");
   return { success: true };
 }

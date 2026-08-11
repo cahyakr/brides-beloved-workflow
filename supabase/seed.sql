@@ -88,3 +88,10 @@ VALUES
 ('66666666-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'Bloom Atelier', 'Decoration', 'Nadia', '081200000001', 'booked', 80000000, true),
 ('66666666-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', 'Evermore Films', 'Documentation', 'Raka', '081200000002', 'shortlisted', 45000000, true)
 ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.guests (id, project_id, name, phone, guest_group, pax, table_name, status)
+VALUES
+('77777777-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'Budi & Keluarga', '081234567890', 'Keluarga Pengantin Wanita', 4, 'A1', 'confirmed'),
+('77777777-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', 'Nadia Putri', '081322001188', 'Sahabat', 2, 'B4', 'invited'),
+('77777777-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', 'Raka Pratama', '085790002211', 'Rekan kerja', 1, null, 'declined')
+ON CONFLICT (id) DO NOTHING;

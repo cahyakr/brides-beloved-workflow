@@ -21,16 +21,13 @@ import {
 } from "lucide-react";
 import { Brand } from "./brand";
 
-const mainNavigation = [
+const navigation = [
   { href: "/portal", label: "Ringkasan", icon: LayoutDashboard },
   { href: "/portal/timeline", label: "Wedding Planner", icon: CalendarRange },
-] as const;
-
-const upcomingModules = [
-  { label: "Budget", icon: WalletCards },
-  { label: "Dokumen", icon: FileText },
-  { label: "Tamu", icon: Users },
-  { label: "Vendor", icon: Store },
+  { href: "/portal/budget", label: "Budget", icon: WalletCards },
+  { href: "/portal/documents", label: "Dokumen", icon: FileText },
+  { href: "/portal/guests", label: "Tamu", icon: Users },
+  { href: "/portal/vendors", label: "Vendor", icon: Store },
 ] as const;
 
 export function PortalShell({ children, clientName }: { children: React.ReactNode; clientName: string }) {
@@ -62,7 +59,7 @@ export function PortalShell({ children, clientName }: { children: React.ReactNod
         <div className="px-4 py-6">
           <p className="px-3 pb-3 text-[9px] font-bold uppercase tracking-[.18em] text-[#a0abbd]">Perencanaan</p>
           <nav className="space-y-1.5">
-            {mainNavigation.map(({ href, label, icon: Icon }) => {
+            {navigation.map(({ href, label, icon: Icon }) => {
               const active = href === "/portal" ? pathname === href : pathname.startsWith(href);
               return (
                 <Link
@@ -80,19 +77,6 @@ export function PortalShell({ children, clientName }: { children: React.ReactNod
               );
             })}
           </nav>
-        </div>
-
-        <div className="px-4">
-          <p className="px-3 pb-3 text-[9px] font-bold uppercase tracking-[.18em] text-[#a0abbd]">Segera hadir</p>
-          <div className="space-y-1">
-            {upcomingModules.map(({ label, icon: Icon }) => (
-              <div key={label} className="flex h-10 items-center gap-3 px-3.5 text-[11px] font-medium text-[#9aa6b7]">
-                <Icon size={15} strokeWidth={1.8} />
-                {label}
-                <span className="ml-auto rounded-full bg-[#f1f3f7] px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-[#a0aabd]">soon</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="mt-auto border-t border-[#edf1f6] p-4">
