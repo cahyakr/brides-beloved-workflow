@@ -113,6 +113,9 @@ export async function updateTask(formData: FormData) {
   const supabase = await createClient();
   if (!supabase) return { error: "No DB connection" };
 
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
   const id = formData.get("id") as string;
   const uiStatus = formData.get("status") as string;
   const uiPriority = formData.get("priority") as string;
@@ -147,18 +150,29 @@ export async function updateTask(formData: FormData) {
 
 export async function completeClientTask(formData: FormData) {
   const supabase = await createClient();
-  if (!supabase) return { error: "No DB connection" };
+  if (!supabase) return { success: true, demo: true };
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
 
   const id = formData.get("id") as string;
   const status = formData.get("status") as string;
 
-  const { error } = await supabase.from("tasks").update({
-    status
-  }).eq("id", id);
+  if (!id || !["not_started", "completed"].includes(status)) {
+    return { error: "Invalid task update" };
+  }
+
+  const { error } = await supabase.rpc("set_task_completion", {
+    task_id: id,
+    is_completed: status === "completed",
+  });
 
   if (error) return { error: error.message };
   
   revalidatePath("/portal/timeline");
+  revalidatePath("/portal");
   revalidatePath("/dashboard/timeline");
+  revalidatePath("/dashboard/clients");
+  revalidatePath("/dashboard/projects");
   return { success: true };
 }

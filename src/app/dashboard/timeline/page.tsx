@@ -2,6 +2,8 @@ import { TimelineBoard } from "@/components/timeline-board";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
+type TaskAssigneeRow = { profiles: { full_name: string } | null };
+
 export default async function TimelinePage() {
   const supabase = await createClient();
   if (!supabase) return <TimelineBoard initialTasks={[]} />;
@@ -20,7 +22,7 @@ export default async function TimelinePage() {
     .order('start_date', { ascending: true });
 
   const mappedTasks = (tasks || []).map((t, index) => {
-    const people = (t.task_assignees || []).map((ta: any) => {
+    const people = ((t.task_assignees || []) as unknown as TaskAssigneeRow[]).map((ta) => {
       const name = ta.profiles?.full_name || "Unknown";
       return name.split(" ").map((n: string) => n[0]).join("").substring(0,2).toUpperCase();
     });

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Plus, Sparkles, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, CheckCircle2, Clock3, Sparkles, Users } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { PageTitle } from "@/components/dashboard-shell";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -44,7 +45,7 @@ export default async function DashboardPage() {
 
   const formattedProjects = (upcomingProjects || []).map(p => {
     const total = p.tasks?.length || 0;
-    const completed = p.tasks?.filter((t: any) => t.status === "completed").length || 0;
+    const completed = p.tasks?.filter((task) => task.status === "completed").length || 0;
     const progress = total > 0 ? Math.round((completed / total) * 100) : 0;
     return {
       name: p.name,
@@ -57,7 +58,7 @@ export default async function DashboardPage() {
 
   const todaysFocus = (allTasks || []).slice(0, 4).map(t => ({
     title: t.title,
-    project: (t.projects as any)?.name || "Internal",
+    project: (t.projects as unknown as { name?: string } | null)?.name || "Internal",
     due: t.due_date ? new Date(t.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "-"
   }));
 
@@ -68,12 +69,12 @@ export default async function DashboardPage() {
       </PageTitle>
       
       <div className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {[
+        {([
           ["Active Weddings", activeWeddings || 0, "Sedang berjalan", Sparkles, "#eaf3ff", "#2f80ed", "/dashboard/projects"],
           ["Upcoming Events", formattedProjects.length, "Terjadwal", CalendarDays, "#f1ecff", "#7458c8", "/dashboard/projects"],
           ["New Leads", newLeads || 0, "Prospek baru", Users, "#ecf8f3", "#3c9a75", "/dashboard/leads"],
           ["Tasks Due", tasksDue, "Tugas aktifmu", Clock3, "#fff5e7", "#cf8a2a", "/dashboard/timeline"],
-        ].map(([label, num, note, Icon, bg, color, href]) => (
+        ] as Array<[string, number, string, LucideIcon, string, string, string]>).map(([label, num, note, Icon, bg, color, href]) => (
           <Link href={String(href)} key={String(label)} className="border border-[#e7edf5] bg-white p-5 hover:border-[#cfd8e3] transition-colors block">
             <div className="flex items-start justify-between">
               <div>
@@ -81,7 +82,6 @@ export default async function DashboardPage() {
                 <p className="mt-3 text-3xl font-semibold tracking-[-.04em]">{String(num)}</p>
               </div>
               <span className="grid h-9 w-9 place-items-center rounded-lg" style={{background:String(bg),color:String(color)}}>
-                {/* @ts-ignore */}
                 <Icon size={17}/>
               </span>
             </div>

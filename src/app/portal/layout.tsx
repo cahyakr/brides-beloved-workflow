@@ -4,7 +4,7 @@ import { PortalShell } from "@/components/portal-shell";
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  if (!supabase) return <div>Database not connected</div>;
+  if (!supabase) return <PortalShell clientName="Sarah & Daniel">{children}</PortalShell>;
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
