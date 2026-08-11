@@ -176,3 +176,34 @@ export async function completeClientTask(formData: FormData) {
   revalidatePath("/dashboard/projects");
   return { success: true };
 }
+
+export async function createClientTask(formData: FormData) {
+  const supabase = await createClient();
+  if (!supabase) return { error: "No DB connection" };
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Unauthorized" };
+
+  const project_id = formData.get("project_id") as string;
+  const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
+  
+  if (!project_id || !title) return { error: "Missing required fields" };
+
+  const { error } = await supabase.from("tasks").insert({
+    project_id,
+    title,
+    description: description || null,
+    category: "Permintaan Klien",
+    status: "not_started",
+    priority: "medium",
+    visible_to_client: true,
+    client_can_complete: false,
+    created_by: user.id
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/portal/timeline");
+  return { success: true };
+}

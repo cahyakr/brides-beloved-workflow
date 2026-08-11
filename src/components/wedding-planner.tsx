@@ -1,19 +1,9 @@
 "use client";
 
 import { completeClientTask } from "@/lib/actions";
-import {
-  CalendarDays,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  Clock3,
-  MessageCircle,
-  MoreHorizontal,
-  Plus,
-  Sparkles,
-  Users,
-} from "lucide-react";
+import { Plus, Sparkles, Users, CalendarDays, Check, CheckCircle2, ChevronDown, Clock3, MessageCircle, MoreHorizontal } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
+import { RequestTaskModal } from "./forms/request-task-modal";
 
 export type PlannerTask = {
   id: string;
@@ -36,6 +26,7 @@ export type PlannerActivity = {
 };
 
 type Props = {
+  projectId?: string;
   coupleName: string;
   weddingDate: string | null;
   venue: string;
@@ -55,10 +46,11 @@ function initials(name: string) {
   return name.split(" ").map((word) => word[0]).join("").slice(0, 2).toUpperCase();
 }
 
-export function WeddingPlanner({ coupleName, weddingDate, venue, tasks: initialTasks, activities, today }: Props) {
+export function WeddingPlanner({ projectId, coupleName, weddingDate, venue, tasks: initialTasks, activities, today }: Props) {
   const [tasks, setTasks] = useState(initialTasks);
   const [filter, setFilter] = useState<"all" | "open" | "completed">("all");
   const [activePhase, setActivePhase] = useState<string | null>(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const completed = tasks.filter((task) => task.status === "completed").length;
@@ -104,7 +96,7 @@ export function WeddingPlanner({ coupleName, weddingDate, venue, tasks: initialT
           <button type="button" className="flex h-9 items-center gap-2 rounded-lg border border-[#dfe5ee] bg-white px-3.5 text-[10px] font-semibold text-[#5a6b84] shadow-sm">
             <Users size={14} /> Tim perencana <ChevronDown size={12} />
           </button>
-          <button type="button" className="flex h-9 items-center gap-2 rounded-lg bg-[#2869e8] px-4 text-[10px] font-semibold text-white shadow-[0_8px_20px_rgba(40,105,232,.22)]">
+          <button type="button" onClick={() => setShowRequestModal(true)} className="flex h-9 items-center gap-2 rounded-lg bg-[#2869e8] px-4 text-[10px] font-semibold text-white shadow-[0_8px_20px_rgba(40,105,232,.22)]">
             <Plus size={14} /> Ajukan tugas
           </button>
         </div>
@@ -249,6 +241,13 @@ export function WeddingPlanner({ coupleName, weddingDate, venue, tasks: initialT
           </section>
         </aside>
       </div>
+      
+      {showRequestModal && (
+        <RequestTaskModal 
+          projectId={projectId || ""}
+          onClose={() => setShowRequestModal(false)}
+        />
+      )}
     </div>
   );
 }
