@@ -486,6 +486,9 @@ create policy "related users upload files" on public.files for insert to authent
 );
 create policy "staff manage files" on public.files for update to authenticated using (public.is_admin() or (project_id is not null and public.is_project_member(project_id))) with check (public.is_admin() or (project_id is not null and public.is_project_member(project_id)));
 create policy "staff delete files" on public.files for delete to authenticated using (public.is_admin() or (project_id is not null and public.is_project_member(project_id)));
+create policy "clients delete own files" on public.files for delete to authenticated using (
+  uploaded_by = auth.uid() and project_id is not null and public.is_project_client(project_id)
+);
 
 create policy "public views active pricelist" on public.pricelists for select to anon, authenticated using (is_active or public.is_admin());
 create policy "admins manage pricelist" on public.pricelists for all to authenticated using (public.is_admin()) with check (public.is_admin());
@@ -521,7 +524,23 @@ values ('avatars', 'avatars', true), ('project-files', 'project-files', false), 
 on conflict (id) do nothing;
 
 create policy "public avatar and pricelist reads" on storage.objects for select to anon, authenticated using (bucket_id in ('avatars', 'pricelists'));
-create policy "authenticated project file reads" on storage.objects for select to authenticated using (bucket_id = 'project-files');
-create policy "authenticated project file uploads" on storage.objects for insert to authenticated with check (bucket_id = 'project-files' and owner_id = auth.uid()::text);
-create policy "owners update project files" on storage.objects for update to authenticated using (bucket_id = 'project-files' and owner_id = auth.uid()::text);
-create policy "owners delete project files" on storage.objects for delete to authenticated using (bucket_id = 'project-files' and owner_id = auth.uid()::text);
+create policy "authenticated project file reads" on storage.objects for select to authenticated using (
+  bucket_id = 'project-files' and exists (
+    select 1 from public.projects p
+    where p.id::text = (storage.foldername(name))[1]
+      and (public.is_admin() or public.is_project_member(p.id) or public.is_project_client(p.id))
+  )
+);
+create policy "authenticated project file uploads" on storage.objects for insert to authenticated with check (
+  bucket_id = 'project-files' and owner_id = auth.uid()::text and exists (
+    select 1 from public.projects p
+    where p.id::text = (storage.foldername(name))[1]
+      and (public.is_admin() or public.is_project_member(p.id) or public.is_project_client(p.id))
+  )
+);
+create policy "owners update project files" on storage.objects for update to authenticated using (
+  bucket_id = 'project-files' and owner_id = auth.uid()::text
+);
+create policy "owners delete project files" on storage.objects for delete to authenticated using (
+  bucket_id = 'project-files' and owner_id = auth.uid()::text
+);

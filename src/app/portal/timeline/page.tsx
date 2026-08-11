@@ -29,14 +29,14 @@ const SERVER_TODAY = new Date().toISOString().slice(0, 10);
 export default async function PortalTimeline() {
   const supabase = await createClient();
   if (!supabase) {
-    return <WeddingPlanner projectId={undefined} coupleName="Sarah & Daniel" weddingDate="2026-12-24" venue="The Apurva Bali" tasks={demoTasks} activities={demoActivities} today={SERVER_TODAY} />;
+    return <WeddingPlanner coupleName="Sarah & Daniel" weddingDate="2026-12-24" venue="The Apurva Bali" tasks={demoTasks} activities={demoActivities} today={SERVER_TODAY} />;
   }
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
   const { data: client } = await supabase.from("clients").select("id, display_name, wedding_date, venue").eq("profile_id", user.id).single();
-  if (!client) return <WeddingPlanner projectId={undefined} coupleName="Wedding Client" weddingDate={null} venue="Venue belum ditentukan" tasks={[]} activities={[]} today={SERVER_TODAY} />;
+  if (!client) return <WeddingPlanner coupleName="Wedding Client" weddingDate={null} venue="Venue belum ditentukan" tasks={[]} activities={[]} today={SERVER_TODAY} />;
 
   const { data: project } = await supabase.from("projects").select("id, event_date, venue").eq("client_id", client.id).neq("status", "cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle();
   const projectId = project?.id;
@@ -68,7 +68,6 @@ export default async function PortalTimeline() {
 
   return (
     <WeddingPlanner
-      projectId={projectId}
       coupleName={client.display_name}
       weddingDate={project?.event_date || client.wedding_date}
       venue={project?.venue || client.venue || "Venue belum ditentukan"}

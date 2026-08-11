@@ -8,6 +8,7 @@ Wedding Organizer management system built with Next.js, React, TypeScript, Tailw
 - Admin dashboard with wedding overview, clients, team, projects, leads, files, and settings.
 - Timeline/Gantt-style workflow inspired by the supplied reference, including search and task detail drawer.
 - Client wedding planner with phase filters, interactive checklist, progress, countdown, activity feed, and assigned team.
+- Client modules for budget tracking, secure project documents, guest RSVP management, and vendor directory.
 - Admin client-progress detail with live task totals and progress per wedding phase.
 - Supabase email/password login with role-based redirect.
 - Complete Supabase SQL schema with planner modules, progress reporting, secure RPCs, and RLS policies.
@@ -26,7 +27,7 @@ Open `http://localhost:3000`.
 ## Supabase setup
 
 1. Create a Supabase project.
-2. Run `supabase/schema.sql` in the Supabase SQL editor. This is the complete fresh-install schema, including RLS, progress view, secure client task RPC, activity log, budgets, vendors, guests, meetings, files, and Storage policies.
+2. For a new/empty database, run `supabase/schema.sql`. For a database that already has the previous Brides Beloved schema, run `supabase/migrations/20260811_wedding_planner_upgrade.sql` instead. Do not run both.
 3. Optional for local/demo data: run `supabase/seed.sql` after the schema.
 4. Put the Project URL and anon/public key in `.env.local`:
 
@@ -57,6 +58,10 @@ The schema creates buckets named `avatars`, `project-files`, and `pricelists`. K
 - `/dashboard/leads` — lead pipeline
 - `/portal` — client portal
 - `/portal/timeline` — interactive client wedding planner
+- `/portal/budget` — budget, payments, and outstanding balance
+- `/portal/documents` — private project document upload and download
+- `/portal/guests` — guest list, pax, groups, tables, and RSVP status
+- `/portal/vendors` — client-visible vendor directory and contract summary
 
 ## Validation
 
